@@ -29,19 +29,11 @@ func main() {
 	// 		fmt.Printf(" (%s) %s => %s\n", i, j, data[i][j])
 	// 	}
 	// }
-	// capacityPercentage, err := strconv.ParseFloat(data["Bat0"]["current capacity float"], 32)
-	// if err != nil {
-	// 	fmt.Println("Error parsing data.", err)
-	// 	os.Exit(2)
-	// }
-	// designCapacityPercentage, err := strconv.ParseFloat(data["Bat0"]["design capacity float"], 32)
-	// if err != nil {
-	// 	fmt.Println("Error parsing data.", err)
-	// 	os.Exit(2)
-	// }
+	capacityPercentage := (data["Bat0"]["current capacity"].valueAsFloat64 / data["Bat0"]["full capacity"].valueAsFloat64) * 100
+	fmt.Printf("%.2f%%\n", capacityPercentage)
 
 	// fmt.Printf("%.2f%% (%s)", capacityPercentage/designCapacityPercentage*100, "test")
-	fmt.Printf("(%s) %s/%s => %s/%s %s\n", "Bat0", data["Bat0"][0].name, data["Bat0"][1].name, data["Bat0"][0].value, data["Bat0"][1].value, data["Bat0"][1].unit)
+	fmt.Printf("(%s) %s/%s => %s/%s %s\n", "Bat0", data["Bat0"]["state"].name, data["Bat0"]["current capacity"].name, data["Bat0"]["full capacity"].value, data["Bat0"]["current capacity"].value, data["Bat0"]["current capacity"].unit)
 
 	os.Exit(0)
 }
@@ -58,36 +50,29 @@ func getLogFile(logFile string) *os.File {
 	return fh
 }
 
-func getBatteryStatus() map[string][]batteryData {
+func getBatteryStatus() map[string]map[string]batteryData {
 	batteries, err := battery.GetAll()
 	if err != nil {
 		fmt.Println("Could not get battery info!")
 		os.Exit(2)
 	}
 	fmt.Println(batteries)
-	batteryStats := make(map[string][]batteryData)
+	// initialized outer map
+	batteryStats := make(map[string]map[string]batteryData)
 
 	for i, battery := range batteries {
-		batteryStats[fmt.Sprintf("Bat%d", i)] =
-			append(batteryStats[fmt.Sprintf("Bat%d", i)],
-				batteryData{name: "state", value: fmt.Sprintf("%s", battery.State), valueAsFloat64: 0.0, unit: ""})
-		batteryStats[fmt.Sprintf("Bat%d", i)] =
-			append(batteryStats[fmt.Sprintf("Bat%d", i)],
-				batteryData{name: "current capacity", value: fmt.Sprintf("%.f2", battery.Current), valueAsFloat64: battery.Current, unit: "mWh"})
-		batteryStats[fmt.Sprintf("Bat%d", i)] =
-			append(batteryStats[fmt.Sprintf("Bat%d", i)],
-				batteryData{name: "full capacity", value: fmt.Sprintf("%.f2", battery.Full), valueAsFloat64: battery.Full, unit: "mWh"})
-		// "state":              fmt.Sprintf("%s", battery.State),
-		// "state value unit":   "string",
-		// "current capacity":   fmt.Sprintf("%.2f", battery.Current), //mWh
-		// "last full capacity": fmt.Sprintf("%.2f", battery.Full),
+		// initialized inner map
+		batteryNumber := fmt.Sprintf("Bat%d", i)
+		batteryStats[batteryNumber] = make(map[string]batteryData)
 
-		// "current capacity":       fmt.Sprintf("%.2f mWh (%.2f V)", battery.Current, battery.Voltage),
-		// "current capacity float": fmt.Sprintf("%.2f", battery.Current),
-		// "last full capacity":     fmt.Sprintf("%.2f mWh", battery.Full),
-		// "design capacity":        fmt.Sprintf("%.2f mWh (%.2f V)", battery.Design, battery.DesignVoltage),
-		// "design capacity float":  fmt.Sprintf("%.2f", battery.Design),
-		// }
+		batteryStats[batteryNumber]["state"] =
+			batteryData{name: "state", value: fmt.Sprintf("%s", battery.State), valueAsFloat64: 0.0, unit: ""}
+		batteryStats[batteryNumber]["current capacity"] =
+			batteryData{name: "current capacity", value: fmt.Sprintf("%.f2", battery.Current), valueAsFloat64: battery.Current, unit: "mWh"}
+		batteryStats[batteryNumber]["full capacity"] =
+			batteryData{name: "full capacity", value: fmt.Sprintf("%.f2", battery.Full), valueAsFloat64: battery.Full, unit: "mWh"}
+		batteryStats[batteryNumber]["design capacity"] =
+			batteryData{name: "design capacity", value: fmt.Sprintf("%.f2", battery.Design), valueAsFloat64: battery.Design, unit: "mWh"}
 
 		// fmt.Printf("Bat%d:\n", i)
 		// // fmt.Printf("state: %s,\n", battery.State)
