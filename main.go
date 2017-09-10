@@ -41,7 +41,7 @@ func main() {
 	// }
 
 	// fmt.Printf("%.2f%% (%s)", capacityPercentage/designCapacityPercentage*100, "test")
-	fmt.Printf("(%s) %s/%s => %s/%s\n", "Bat0", "current capacity", "design capacity", data["Bat0"][0].value, data["Bat0"][1].value)
+	fmt.Printf("(%s) %s/%s => %s/%s %s\n", "Bat0", data["Bat0"][0].name, data["Bat0"][1].name, data["Bat0"][0].value, data["Bat0"][1].value, data["Bat0"][1].unit)
 
 	os.Exit(0)
 }
@@ -64,6 +64,7 @@ func getBatteryStatus() map[string][]batteryData {
 		fmt.Println("Could not get battery info!")
 		os.Exit(2)
 	}
+	fmt.Println(batteries)
 	batteryStats := make(map[string][]batteryData)
 
 	for i, battery := range batteries {
@@ -73,6 +74,9 @@ func getBatteryStatus() map[string][]batteryData {
 		batteryStats[fmt.Sprintf("Bat%d", i)] =
 			append(batteryStats[fmt.Sprintf("Bat%d", i)],
 				batteryData{name: "current capacity", value: fmt.Sprintf("%.f2", battery.Current), valueAsFloat64: battery.Current, unit: "mWh"})
+		batteryStats[fmt.Sprintf("Bat%d", i)] =
+			append(batteryStats[fmt.Sprintf("Bat%d", i)],
+				batteryData{name: "full capacity", value: fmt.Sprintf("%.f2", battery.Full), valueAsFloat64: battery.Full, unit: "mWh"})
 		// "state":              fmt.Sprintf("%s", battery.State),
 		// "state value unit":   "string",
 		// "current capacity":   fmt.Sprintf("%.2f", battery.Current), //mWh
