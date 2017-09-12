@@ -23,17 +23,10 @@ func main() {
 	defer fh.Close()
 
 	data := getBatteryStatus()
-	// fmt.Print(data)
-	// for i := range data {
-	// 	for j := range data[i] {
-	// 		fmt.Printf(" (%s) %s => %s\n", i, j, data[i][j])
-	// 	}
-	// }
 	capacityPercentage := (data["Bat0"]["current capacity"].valueAsFloat64 / data["Bat0"]["full capacity"].valueAsFloat64) * 100
-	fmt.Printf("%.2f%%\n", capacityPercentage)
+	// fmt.Printf("%.2f%%\n", capacityPercentage)
 
-	// fmt.Printf("%.2f%% (%s)", capacityPercentage/designCapacityPercentage*100, "test")
-	fmt.Printf("(%s) %s/%s => %s/%s %s\n", "Bat0", data["Bat0"]["state"].name, data["Bat0"]["current capacity"].name, data["Bat0"]["full capacity"].value, data["Bat0"]["current capacity"].value, data["Bat0"]["current capacity"].unit)
+	fmt.Printf("(%s) state: %s %s => %.2f%% of full capacity: %s %s\n", "Bat0", data["Bat0"]["state"].value, data["Bat0"]["current capacity"].value, capacityPercentage, data["Bat0"]["full capacity"].value, data["Bat0"]["full capacity"].unit)
 
 	os.Exit(0)
 }
@@ -56,7 +49,7 @@ func getBatteryStatus() map[string]map[string]batteryData {
 		fmt.Println("Could not get battery info!")
 		os.Exit(2)
 	}
-	fmt.Println(batteries)
+	// fmt.Println(batteries)
 	// initialized outer map
 	batteryStats := make(map[string]map[string]batteryData)
 
@@ -73,6 +66,12 @@ func getBatteryStatus() map[string]map[string]batteryData {
 			batteryData{name: "full capacity", value: fmt.Sprintf("%.f2", battery.Full), valueAsFloat64: battery.Full, unit: "mWh"}
 		batteryStats[batteryNumber]["design capacity"] =
 			batteryData{name: "design capacity", value: fmt.Sprintf("%.f2", battery.Design), valueAsFloat64: battery.Design, unit: "mWh"}
+		batteryStats[batteryNumber]["charge rate"] =
+			batteryData{name: "charge rate", value: fmt.Sprintf("%.f2", battery.ChargeRate), valueAsFloat64: battery.ChargeRate, unit: "mW"}
+		batteryStats[batteryNumber]["voltage"] =
+			batteryData{name: "voltage", value: fmt.Sprintf("%.f2", battery.Voltage), valueAsFloat64: battery.Voltage, unit: "V"}
+		batteryStats[batteryNumber]["design voltage"] =
+			batteryData{name: "design voltage", value: fmt.Sprintf("%.f2", battery.DesignVoltage), valueAsFloat64: battery.DesignVoltage, unit: "V"}
 
 		// fmt.Printf("Bat%d:\n", i)
 		// // fmt.Printf("state: %s,\n", battery.State)
